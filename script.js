@@ -7,14 +7,12 @@ try {
       "https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/usd.json"
     );
     const json = await data.json();
-    const para = document.createElement("p");
-    const node = document.createTextNode(`1 USD = ${json.usd.cny} CNY`);
-    para.appendChild(node);
-    document.body.appendChild(para);
+    const para = document.getElementById("rate-para");
+    para.innerText=`1 USD = ${json.usd.cny} CNY at ${new Date().toLocaleString()}`;
     return json.usd.cny;
   };
 
-  (async () => {
+  const fetchRate = async () => {
     exchangeRate = await getRate();
 
     cny_rate.addEventListener("input", function () {
@@ -24,7 +22,8 @@ try {
     usd_rate.addEventListener("input", function () {
       cny.value = (this.value * exchangeRate).toFixed(5);
     });
-  })();
+  }
+    document.getElementById("fetch-button").addEventListener("click", fetchRate);
 
   cny_rate.addEventListener("input", function () {
     usd.value = (this.value / exchangeRate).toFixed(2);
