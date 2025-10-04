@@ -1,37 +1,50 @@
 try {
-  let cny_rate = document.getElementById("cny");
-  let usd_rate = document.getElementById("usd");
-  let exchangeRate;
+  const cny_rate = document.getElementById("cny");
+  const usd_rate = document.getElementById("usd");
+  const para = document.getElementById("rate-para");
+  const fetchButton = document.getElementById("fetch-button");
+
+  // const url ="htps://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/usd.json";
+  const url =
+    "https://www.xe.com/api/protected/midmarket-converter/";
+
   const getRate = async () => {
-    const data = await fetch(
-      "https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/usd.json"
-    );
-    const json = await data.json();
-    const para = document.getElementById("rate-para");
-    para.innerText=`1 USD = ${json.usd.cny} CNY at ${new Date().toLocaleString()}`;
-    return json.usd.cny;
+    try {
+      const data = await fetch(url);
+      const json = await data.json();
+      if (json.result !== "success") {
+        para.innerText = "Failed to fetch exchange rate.";
+        return null;
+      }
+
+      const rate = json.conversion_rates.CNY;
+      para.innerText = `1 USD = ${rate} CNY at ${new Date().toLocaleString()}`;
+      return rate;
+    } catch (error) {
+      console.error("Error fetching exchange rate:", error);
+      para.innerText = "Error fetching exchange rate.";
+      return null;
+    }
+  };
+
+  const updateRates = (exchangeRate) => {
+    cny_rate.addEventListener("input", () => {
+      usd_rate.value = (cny_rate.value / exchangeRate).toFixed(2);
+    });
+
+    usd_rate.addEventListener("input", () => {
+      cny_rate.value = (usd_rate.value * exchangeRate).toFixed(5);
+    });
   };
 
   const fetchRate = async () => {
-    exchangeRate = await getRate();
+    const exchangeRate = await getRate();
+    if (exchangeRate) updateRates(exchangeRate);
+  };
 
-    cny_rate.addEventListener("input", function () {
-      usd.value = (this.value / exchangeRate).toFixed(2);
-    });
+  fetchButton.addEventListener("click", fetchRate);
 
-    usd_rate.addEventListener("input", function () {
-      cny.value = (this.value * exchangeRate).toFixed(5);
-    });
-  }
-    document.getElementById("fetch-button").addEventListener("click", fetchRate);
-
-  cny_rate.addEventListener("input", function () {
-    usd.value = (this.value / exchangeRate).toFixed(2);
-  });
-
-  usd_rate.addEventListener("input", function () {
-    cny.value = (this.value * exchangeRate).toFixed(5);
-  });
+  fetchRate();
 } catch (error) {
-  console.error;
+  console.error("Script error:", error);
 }
